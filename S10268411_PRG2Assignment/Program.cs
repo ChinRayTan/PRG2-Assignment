@@ -18,11 +18,11 @@
                 Console.WriteLine("=============================================");
                 Console.WriteLine("1. List all Flights");
                 Console.WriteLine("2. List Boarding Gates");
-                Console.WriteLine("3. Assign a Boarding Gate to a Flight");
+                Console.WriteLine("3. Assign a Boarding Gate to a Flight [UNAVAILABLE - SOLO]");
                 Console.WriteLine("4. Create Flight");
                 Console.WriteLine("5. Display Airline Flights");
-                Console.WriteLine("6. Modify flight details");
-                Console.WriteLine("7. Display Flight Schedule");
+                Console.WriteLine("6. Modify flight details [UNAVAILABLE - SOLO]");
+                Console.WriteLine("7. Display Flight Schedule [UNAVAILABLE - SOLO]");
                 Console.WriteLine("0. Exit");
                 Console.WriteLine();
                 Console.WriteLine("Please select an option: ");
@@ -135,12 +135,46 @@
                             break;
 
                         case 5:
-                            break;
+                            while (true)
+                            {
+                                try
+                                {
+                                    Console.WriteLine("=============================================");
+                                    Console.WriteLine("List of Airlines for Changi Airport Terminal 5");
+                                    Console.WriteLine("=============================================");
+                                    Console.WriteLine($"{"Airline Code",-17}{"Airline Name"}");
+                                    foreach (KeyValuePair<string, Airline> keyValuePair in airlineDict)
+                                    {
+                                        Console.WriteLine($"{keyValuePair.Key,-17}{keyValuePair.Value}");
+                                    }
+                                    Console.Write("Enter Airline Code: ");
+                                    string airlineCode = Console.ReadLine();
+
+                                    Airline airline = airlineDict.Values.FirstOrDefault(x => x.Code == airlineCode);
+                                    if (airline == null) throw new ArgumentException("Invalid airline code.");
+
+                                    Console.WriteLine("=============================================");
+                                    Console.WriteLine($"List of Flights for {airline.Name}");
+                                    Console.WriteLine("=============================================");
+                                    Console.WriteLine($"{"Flight Number",-18}{"Airline Name",-22}{"Origin",-22}{"Destination",-21}{"Expected Departure/Arrival Time"}");
+                                    foreach (Flight flight in flightsDict.Values)
+                                    {
+                                        if (flight.FlightNumber.Substring(0, 2) == airlineCode)
+                                            Console.WriteLine($"{flight.FlightNumber,-18}{airlineDict[flight.FlightNumber.Substring(0, 2)].Name,-22}{flight.Origin,-22}{flight.Destination,-21}{flight.ExpectedTime.ToString(@"g")}");
+                                    }
+                                } catch (Exception ex)
+                                {
+                                    Console.WriteLine($"Error: {ex.Message}");
+                                }
+
+                            }
 
                         case 6:
+                            Console.WriteLine("Not implemented - solo project");
                             break;
 
                         case 7:
+                            Console.WriteLine("Not implemented - solo project");
                             break;
 
                         case 0:
