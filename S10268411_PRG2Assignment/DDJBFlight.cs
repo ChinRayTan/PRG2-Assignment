@@ -22,7 +22,7 @@ namespace S10268411_PRG2Assignment
 
         public override string ToString()
         {
-            return $"{base.ToString()} \tRequest Fee: {RequestFee}";
+            return $"Flight Type: DDJB \n{base.ToString()} \tRequest Fee: {RequestFee}";
         }
     }
 }

@@ -57,6 +57,81 @@
                             break;
 
                         case 4:
+                            bool loop = true;
+                            while (loop == true)
+                            {
+                                try
+                                {
+                                    Console.Write("Please enter the new flight's Flight Number: ");
+                                    string flightNumber = Console.ReadLine();
+                                    if (airlineDict.Keys.FirstOrDefault(x => x.Contains(flightNumber.Substring(0, 2))) == null || string.IsNullOrEmpty(flightNumber))
+                                    {
+                                        throw new ArgumentException("Invalid flight number.");
+                                    }
+
+                                    Console.Write("Please enter the new flight's Origin: ");
+                                    string origin = Console.ReadLine();
+                                    if (string.IsNullOrEmpty(origin))
+                                    {
+                                        throw new ArgumentException("Invalid flight origin.");
+                                    }
+
+                                    Console.Write("Please enter the new flight's Destination: ");
+                                    string destination = Console.ReadLine();
+                                    if (string.IsNullOrEmpty(destination))
+                                    {
+                                        throw new ArgumentException("Invalid flight destination.");
+                                    }
+
+                                    Console.Write("Please enter the new flight's Expected Departure/Arrival Time (dd/MM/yyyy hh:mm:ss)");
+                                    if (DateTime.TryParse(Console.ReadLine(), out DateTime expectedTime))
+                                    {
+                                        Console.Write("Please enter the new flight's Special Request Code (leave blank if none): ");
+                                        string? requestCode = Console.ReadLine();
+
+                                        Flight flightObject;
+                                        switch (requestCode)
+                                        {
+                                            case "":
+                                                flightObject = new NORMFlight(flightNumber, origin, destination, expectedTime);
+                                                break;
+
+                                            case "LWTT":
+                                                flightObject = new LWTTFlight(flightNumber, origin, destination, expectedTime);
+                                                break;
+
+                                            case "DDJB":
+                                                flightObject = new DDJBFlight(flightNumber, origin, destination, expectedTime);
+                                                break;
+
+                                            case "CFFT":
+                                                flightObject = new CFFTFlight(flightNumber, origin, destination, expectedTime);
+                                                break;
+
+                                            default:
+                                                throw new ArgumentException("Invalid request code.");
+                                        }
+                                        flightsDict.Add(flightNumber, flightObject);
+                                        Console.WriteLine("Successfully added flight.");
+                                        Console.WriteLine(flightObject.ToString());
+                                        Console.WriteLine();
+                                        Console.Write("Would you like to add another flight [Y/n]: ");
+                                        string response = Console.ReadLine();
+                                        if (response.ToLower() != "y") 
+                                        {
+                                            loop = false;
+                                            if (response.ToLower() != "n") Console.WriteLine("I'm taking that as a no.");  
+                                        }
+                                    }
+                                    else
+                                    {
+                                        throw new ArgumentException("Invalid time.");
+                                    }
+                                } catch (Exception ex)
+                                {
+                                    Console.WriteLine($"Error: {ex.Message}");
+                                }
+                            }
                             break;
 
                         case 5:
