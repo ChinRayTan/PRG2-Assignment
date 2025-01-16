@@ -8,12 +8,12 @@ namespace S10268411_PRG2Assignment
 {
     internal class NORMFlight : Flight
     {
-        public NORMFlight(string flightNumber, string origin, string destination, DateTime expectedTime, string status) : base(flightNumber, origin, destination, expectedTime, status)
+        public NORMFlight(string flightNumber, string origin, string destination, DateTime expectedTime) : base(flightNumber, origin, destination, expectedTime)
         {
 
         }
 
-        public double CalculateFees()
+        public override double CalculateFees()
         {
             return -1;
         }

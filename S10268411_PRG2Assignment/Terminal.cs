@@ -35,7 +35,7 @@ namespace S10268411_PRG2Assignment
 
         public Airline GetAirlineFromFlight(Flight flight)
         {
-            
+            return new Airline("filler", "filler");
         }
 
         public void PrintAirlineFees()
