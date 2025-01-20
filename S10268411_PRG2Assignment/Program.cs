@@ -1,4 +1,11 @@
-﻿namespace S10268411_PRG2Assignment
+﻿//==========================================================
+// Student Number   : S10268411
+// Student Name	: Tan Chin Ray
+// Partner Name	: -
+//==========================================================
+
+
+namespace S10268411_PRG2Assignment
 {
     internal class Program
     {
@@ -62,37 +69,37 @@
                             {
                                 try
                                 {
-                                    Console.Write("Please enter the new flight's Flight Number: ");
+                                    Console.Write("Enter Flight Number: ");
                                     string flightNumber = Console.ReadLine();
-                                    if (airlineDict.Keys.FirstOrDefault(x => x.Contains(flightNumber.Substring(0, 2))) == null || string.IsNullOrEmpty(flightNumber))
+                                    if (airlineDict.Keys.FirstOrDefault(x => x.ToUpper().Contains(flightNumber.Substring(0, 2))) == null || string.IsNullOrEmpty(flightNumber))
                                     {
                                         throw new ArgumentException("Invalid flight number.");
                                     }
 
-                                    Console.Write("Please enter the new flight's Origin: ");
+                                    Console.Write("Enter Origin: ");
                                     string origin = Console.ReadLine();
                                     if (string.IsNullOrEmpty(origin))
                                     {
                                         throw new ArgumentException("Invalid flight origin.");
                                     }
 
-                                    Console.Write("Please enter the new flight's Destination: ");
+                                    Console.Write("Enter Destination: ");
                                     string destination = Console.ReadLine();
                                     if (string.IsNullOrEmpty(destination))
                                     {
                                         throw new ArgumentException("Invalid flight destination.");
                                     }
 
-                                    Console.Write("Please enter the new flight's Expected Departure/Arrival Time (dd/MM/yyyy hh:mm:ss)");
+                                    Console.Write("Enter Expected Departure/Arrival Time (dd/mm/yyyy hh:mm): ");
                                     if (DateTime.TryParse(Console.ReadLine(), out DateTime expectedTime))
                                     {
-                                        Console.Write("Please enter the new flight's Special Request Code (leave blank if none): ");
+                                        Console.Write("Enter Special Request Code (CFFT/DDJB/LWTT/None): ");
                                         string? requestCode = Console.ReadLine();
 
                                         Flight flightObject;
-                                        switch (requestCode)
+                                        switch (requestCode.ToUpper())
                                         {
-                                            case "":
+                                            case "NONE":
                                                 flightObject = new NORMFlight(flightNumber, origin, destination, expectedTime);
                                                 break;
 
@@ -112,10 +119,10 @@
                                                 throw new ArgumentException("Invalid request code.");
                                         }
                                         flightsDict.Add(flightNumber, flightObject);
-                                        Console.WriteLine("Successfully added flight.");
-                                        Console.WriteLine(flightObject.ToString());
+                                        File.AppendAllText("flights.csv", string.Join(",", flightNumber, origin, destination, expectedTime.ToString("t"), requestCode));
+                                        Console.WriteLine($"Flight {flightNumber} has been added!");
                                         Console.WriteLine();
-                                        Console.Write("Would you like to add another flight [Y/n]: ");
+                                        Console.Write("Would you like to add another flight [Y/N]: ");
                                         string response = Console.ReadLine();
                                         if (response.ToLower() != "y") 
                                         {
