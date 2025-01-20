@@ -30,6 +30,7 @@ namespace S10268411_PRG2Assignment
                 Console.WriteLine("5. Display Airline Flights");
                 Console.WriteLine("6. Modify flight details [UNAVAILABLE - SOLO]");
                 Console.WriteLine("7. Display Flight Schedule [UNAVAILABLE - SOLO]");
+                Console.WriteLine("8. Process all unassigned flights to boarding gates");
                 Console.WriteLine("0. Exit");
                 Console.WriteLine();
                 Console.WriteLine("Please select an option: ");
@@ -152,7 +153,7 @@ namespace S10268411_PRG2Assignment
                                     Console.WriteLine($"{"Airline Code",-17}{"Airline Name"}");
                                     foreach (KeyValuePair<string, Airline> keyValuePair in airlineDict)
                                     {
-                                        Console.WriteLine($"{keyValuePair.Key,-17}{keyValuePair.Value}");
+                                        Console.WriteLine($"{keyValuePair.Key,-17}{keyValuePair.Value.Name}");
                                     }
                                     Console.Write("Enter Airline Code: ");
                                     string airlineCode = Console.ReadLine();
@@ -164,17 +165,19 @@ namespace S10268411_PRG2Assignment
                                     Console.WriteLine($"List of Flights for {airline.Name}");
                                     Console.WriteLine("=============================================");
                                     Console.WriteLine($"{"Flight Number",-18}{"Airline Name",-22}{"Origin",-22}{"Destination",-21}{"Expected Departure/Arrival Time"}");
-                                    foreach (Flight flight in flightsDict.Values)
+                                    
+                                    foreach (Flight flight in airline.Flights.Values)
                                     {
-                                        if (flight.FlightNumber.Substring(0, 2) == airlineCode)
-                                            Console.WriteLine($"{flight.FlightNumber,-18}{airlineDict[flight.FlightNumber.Substring(0, 2)].Name,-22}{flight.Origin,-22}{flight.Destination,-21}{flight.ExpectedTime.ToString(@"g")}");
+                                        Console.WriteLine($"{flight.FlightNumber,-18}{airline.Name,-22}{flight.Origin,-22}{flight.Destination,-21}{flight.ExpectedTime.ToString(@"g")}");
                                     }
+
+                                    break;
                                 } catch (Exception ex)
                                 {
                                     Console.WriteLine($"Error: {ex.Message}");
                                 }
-
                             }
+                            break;
 
                         case 6:
                             Console.WriteLine("Not implemented - solo project");
@@ -182,6 +185,10 @@ namespace S10268411_PRG2Assignment
 
                         case 7:
                             Console.WriteLine("Not implemented - solo project");
+                            break;
+
+                        case 8:
+
                             break;
 
                         case 0:
@@ -264,6 +271,13 @@ namespace S10268411_PRG2Assignment
                         throw new ArgumentException("Invalid request code");
                 }
                 flightsDict.Add(flightArray[0], flightObject);
+            }
+
+            // Load flights into respective airlines
+            foreach (Flight flight in flightsDict.Values)
+            {
+                Airline airline = airlineDict.FirstOrDefault(x => x.Key == flight.FlightNumber.Substring(0, 2)).Value;
+                airline.Flights.Add(flight.FlightNumber, flight);
             }
             Console.WriteLine($"{flightsDict.Count} Flights Loaded!");
         }
