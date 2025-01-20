@@ -34,7 +34,7 @@ namespace S10268411_PRG2Assignment
 
         public double CalculateFees()
         {
-            return -1;
+            return Flight.CalculateFees() + 300;
         }
 
         public override string ToString()

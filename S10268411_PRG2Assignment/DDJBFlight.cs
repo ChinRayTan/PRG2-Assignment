@@ -17,7 +17,10 @@ namespace S10268411_PRG2Assignment
 
         public override double CalculateFees()
         {
-            return -1;
+            if (Origin == "Singapore (SIN)")
+                return 800 + 300;
+            else
+                return 500 + 300;
         }
 
         public override string ToString()
