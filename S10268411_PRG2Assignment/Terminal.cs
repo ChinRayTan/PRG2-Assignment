@@ -31,22 +31,31 @@ namespace S10268411_PRG2Assignment
 
         public bool AddAirline(Airline airline)
         {
-            return false;
+            if (Airlines.ContainsKey(airline.Code)) return false;
+            else
+                Airlines.Add(airline.Code, airline);
+                return true;
         }
 
         public bool AddBoardingGate(BoardingGate boardingGate)
         {
-            return false;
+            if (BoardingGates.ContainsKey(boardingGate.GateName)) return false;
+            else
+                BoardingGates.Add(boardingGate.GateName, boardingGate);
+                return true;
         }
 
         public Airline GetAirlineFromFlight(Flight flight)
         {
-            return new Airline("filler", "filler");
+            return Airlines.FirstOrDefault(x => x.Key == flight.FlightNumber.Substring(0, 2)).Value;
         }
 
         public void PrintAirlineFees()
         {
-
+            foreach (Airline airline in Airlines.Values)
+            {
+                Console.WriteLine($"{airline.Name} ({airline.Code}): ${airline.CalculateFees()}");
+            }
         }
 
         public override string ToString()
