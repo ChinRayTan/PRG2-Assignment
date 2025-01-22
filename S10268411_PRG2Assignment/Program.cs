@@ -188,7 +188,65 @@ namespace S10268411_PRG2Assignment
                             break;
 
                         case 8:
+                            // Populate list of unassigned gates and flights
+                            List<BoardingGate> unassignedGates = boardingGatesDict.Values.ToList().Where(x => x.Flight == null).ToList();
+                            Queue<Flight> unassignedFlights = new Queue<Flight>();
 
+                            foreach (Flight flight in flightsDict.Values)
+                            {
+                                if (boardingGatesDict.Values.FirstOrDefault(x => x.Flight == flight) == null)
+                                {
+                                    unassignedFlights.Enqueue(flight);
+                                }
+                            }
+
+                            Console.WriteLine($"Unassigned flights: {unassignedFlights.Count}");
+                            Console.WriteLine($"Unassigned boarding gates: {unassignedGates.Count}");
+
+                            // Assign all the special flights first
+                            while (unassignedFlights.Count - unassignedFlights.Where(x => x is NORMFlight).ToList().Count > 0)
+                            {
+                                Flight flight = unassignedFlights.Dequeue();
+                                BoardingGate? suitableGate;
+
+                                if (flight is CFFTFlight)
+                                {
+                                    suitableGate = unassignedGates.FirstOrDefault(x => x.SupportsCFFT == true);
+                                    if (suitableGate == null) throw new Exception("No available CFFT capable gates for flight.");
+                                
+                                } else if (flight is DDJBFlight)
+                                {
+                                    suitableGate = unassignedGates.FirstOrDefault(
+                                        x => x.SupportsDDJB == true
+                                    );
+
+                                    if (suitableGate == null) throw new Exception("No available DDJB capable gates for flight.");
+
+                                } else if (flight is LWTTFlight)
+                                {
+                                    suitableGate = unassignedGates.FirstOrDefault(
+                                        x => x.SupportsLWTT == true
+                                    );
+
+                                    if (suitableGate == null) throw new Exception("No available LWTT capable gates for flight.");
+                                }
+                                else
+                                {
+                                    continue;
+                                }
+
+                                suitableGate.Flight = flight;
+                            }
+
+                            // Assign normal flights (which are fine with anything)
+                            while (unassignedFlights.Count > 0)
+                            {
+                                Flight flight = unassignedFlights.Dequeue();
+                                BoardingGate? suitableGate = unassignedGates.FirstOrDefault();
+
+                                if (suitableGate == null) throw new Exception("No available gates for normal flights.");
+                                else suitableGate.Flight = flight;
+                            }
                             break;
 
                         case 0:
