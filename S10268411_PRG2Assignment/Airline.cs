@@ -36,20 +36,22 @@ namespace S10268411_PRG2Assignment
 
         public double CalculateFees()
         {
-            double undiscountedPrice = Flights.Values.Sum(x => x.CalculateFees());
-            undiscountedPrice -= Math.Floor(Flights.Count / 3.0) * 350; // Every 3 flights discount
-            if (Flights.Count > 5) undiscountedPrice *= 0.97; // More than 5 flights discount
+            double totalPrice = Flights.Values.Sum(x => x.CalculateFees());
+
+            double discounts = 0;
+            discounts += Math.Floor(Flights.Count / 3.0) * 350; // Every 3 flights discount
+            if (Flights.Count > 5) discounts += totalPrice * 0.03; // More than 5 flights discount
 
             foreach (Flight flight in Flights.Values)
             {
-                if (flight.ExpectedTime.Hour > 21 && flight.ExpectedTime.Hour < 11) undiscountedPrice -= 110; // 9pm < time < 11am discount
+                if (flight.ExpectedTime.Hour > 21 && flight.ExpectedTime.Hour < 11) discounts += 110; // 9pm < time < 11am discount
 
-                if (new[] { "Dubai (DXB)", "Bangkok (BKK)", "Tokyo (NRT)" }.Contains(flight.Origin)) undiscountedPrice -= 25; // Dubai/Bangkok/Tokyo discount
+                if (new[] { "Dubai (DXB)", "Bangkok (BKK)", "Tokyo (NRT)" }.Contains(flight.Origin)) discounts += 25; // Dubai/Bangkok/Tokyo discount
 
-                if (flight is NORMFlight) undiscountedPrice -= 50; // No request code discount
+                if (flight is NORMFlight) discounts += 50; // No request code discount
             }
 
-            return undiscountedPrice;
+            return totalPrice - discounts;
         }
 
         public bool RemoveFlight(Flight flight)

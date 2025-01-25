@@ -35,7 +35,7 @@ namespace S10268411_PRG2Assignment
                 Console.WriteLine("6. Modify flight details [UNAVAILABLE - SOLO]");
                 Console.WriteLine("7. Display Flight Schedule [UNAVAILABLE - SOLO]");
                 Console.WriteLine("8. Process all unassigned flights to boarding gates");
-                Console.WriteLine("9. Display total fee per airline for the day");
+                //Console.WriteLine("9. Display total fee per airline for the day");
                 Console.WriteLine("0. Exit");
                 Console.WriteLine();
                 Console.WriteLine("Please select an option: ");
@@ -277,7 +277,27 @@ namespace S10268411_PRG2Assignment
                             break;
 
                         case 9:
+                            /*try
+                            {
+                                foreach (Flight flight in terminal5.Flights.Values)
+                                {
+                                    if (terminal5.BoardingGates.Values.FirstOrDefault(x => x.Flight == flight) == null)
+                                    {
+                                        throw new InvalidOperationException("Not all flights have been assigned to gates. Please assign all unassigned flights and try again.")
+                                    }
+                                }
 
+                                foreach (Airline airline in terminal5.Airlines.Values)
+                                {
+                                    double totalFees = 0;
+                                    airline.Flights.Values.ToList().ForEach(x => totalFees += x.CalculateFees());
+                                }
+                            } catch (Exception ex)
+                            {
+                                Console.WriteLine($"Error: {ex.Message}");
+                            }*/
+
+                            Console.WriteLine("Not implemented - solo project");
                             break;
                         
                         case 0:
