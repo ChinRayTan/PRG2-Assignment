@@ -5,6 +5,8 @@
 //==========================================================
 
 
+using System.Transactions;
+
 namespace S10268411_PRG2Assignment
 {
     internal class Program
@@ -191,14 +193,15 @@ namespace S10268411_PRG2Assignment
                             break;
 
                         case 8:
-                            int successfullyAssignedGates = 0;
-                            int successfullyAssignedFlights = 0;
+                            int successfullyAssigned = 0;
+                            int alredyAssigned = terminal5.BoardingGates.Values.Where(x => x.Flight != null).Count();
                             try
                             {
                                 // Populate list of unassigned gates and flights
                                 List<BoardingGate> unassignedGates = terminal5.BoardingGates.Values.ToList().Where(x => x.Flight == null).ToList();
                                 Queue<Flight> unassignedFlights = new Queue<Flight>();
 
+                                // Check which flights are unassigned
                                 foreach (Flight flight in terminal5.Flights.Values)
                                 {
                                     if (terminal5.BoardingGates.Values.FirstOrDefault(x => x.Flight == flight) == null)
@@ -239,12 +242,13 @@ namespace S10268411_PRG2Assignment
                                     }
                                     else
                                     {
+                                        unassignedFlights.Enqueue(flight);
                                         continue;
                                     }
 
                                     suitableGate.Flight = flight;
-                                    successfullyAssignedFlights += 1;
-                                    successfullyAssignedGates += 1;
+                                    unassignedGates.Remove(suitableGate);
+                                    successfullyAssigned += 1;
                                 }
 
                                 // Assign normal flights (which are fine with anything)
@@ -257,8 +261,8 @@ namespace S10268411_PRG2Assignment
                                     else
                                     {
                                         suitableGate.Flight = flight;
-                                        successfullyAssignedFlights += 1;
-                                        successfullyAssignedGates += 1;
+                                        unassignedGates.Remove(suitableGate);
+                                        successfullyAssigned += 1;
                                     }
                                 }
                             } catch (Exception ex)
@@ -266,9 +270,9 @@ namespace S10268411_PRG2Assignment
                                 Console.WriteLine($"Error: {ex.Message}");
                             } finally
                             {
-                                Console.WriteLine($"{successfullyAssignedFlights} flights successfully assigned to {successfullyAssignedGates} gates.");
-                                Console.WriteLine($"{(successfullyAssignedFlights / (double)terminal5.Flights.Count) * 100:F2}% of flights processed");
-                                Console.WriteLine($"{(successfullyAssignedGates / (double)terminal5.BoardingGates.Count) * 100:F2}% of gates processed");
+                                Console.WriteLine($"{successfullyAssigned} flights successfully assigned to gates.");
+                                double percentage = (successfullyAssigned / (double)successfullyAssigned + alredyAssigned) * 100;
+                                Console.WriteLine($"{(successfullyAssigned == 0 ? "0" : percentage):F2}% out of total assigned flights processed");
                             }
                             break;
 
