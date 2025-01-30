@@ -6,20 +6,58 @@
 
 
 using System.Transactions;
+using System.Reflection;
 
 namespace S10268411_PRG2Assignment
 {
     internal class Program
     {
-        private static Dictionary<string, Airline> airlineDict = new Dictionary<string, Airline>();
-        private static Dictionary<string, BoardingGate> boardingGatesDict = new Dictionary<string, BoardingGate>();
-        private static Dictionary<string, Flight> flightsDict = new Dictionary<string, Flight>();
-        
-        private static Terminal terminal5 = new Terminal("Terminal 5");
+        private static List<Terminal> terminalList = new List<Terminal>();
 
         static void Main(string[] args)
         {
             InitialiseValues();
+            bool mainMenu = true;
+            while (mainMenu)
+            {
+                Console.WriteLine();
+                Console.WriteLine("=============================================");
+                Console.WriteLine("Welcome to Changi Airport");
+                Console.WriteLine("=============================================");
+                for (int i = 1; i < terminalList.Count + 1; i++)
+                {
+                    Console.WriteLine($"{i}. {terminalList[i].TerminalName}");
+                }
+                Console.WriteLine("0. Exit");
+                Console.WriteLine();
+                Console.Write("Please select a terminal: ");
+                if (Int32.TryParse(Console.ReadLine(), out int choice))
+                {
+                    if (choice > 0 && choice < terminalList.Count)
+                    {
+                        Entry(choice);
+                    }
+                    else if (choice == 0)
+                    {
+                        Console.WriteLine("Goodbye!");
+                        mainMenu = false;
+                        break;
+                    } else
+                    {
+                        Console.WriteLine("Invalid option.");
+                    }
+                }
+                else
+                {
+                    Console.WriteLine("Invalid option.");
+                }
+            }
+
+            
+        }
+
+        private static void Entry(int terminalNumber)
+        {
             bool running = true;
             while (running)
             {
@@ -36,7 +74,7 @@ namespace S10268411_PRG2Assignment
                 Console.WriteLine("7. Display Flight Schedule [UNAVAILABLE - SOLO]");
                 Console.WriteLine("8. Process all unassigned flights to boarding gates");
                 //Console.WriteLine("9. Display total fee per airline for the day");
-                Console.WriteLine("0. Exit");
+                Console.WriteLine("0. Return to main menu");
                 Console.WriteLine();
                 Console.WriteLine("Please select an option: ");
                 if (Int32.TryParse(Console.ReadLine(), out int choice))
@@ -130,17 +168,18 @@ namespace S10268411_PRG2Assignment
                                         Console.WriteLine();
                                         Console.Write("Would you like to add another flight [Y/N]: ");
                                         string response = Console.ReadLine();
-                                        if (response.ToLower() != "y") 
+                                        if (response.ToLower() != "y")
                                         {
                                             loop = false;
-                                            if (response.ToLower() != "n") Console.WriteLine("I'm taking that as a no.");  
+                                            if (response.ToLower() != "n") Console.WriteLine("I'm taking that as a no.");
                                         }
                                     }
                                     else
                                     {
                                         throw new ArgumentException("Invalid time.");
                                     }
-                                } catch (Exception ex)
+                                }
+                                catch (Exception ex)
                                 {
                                     Console.WriteLine($"Error: {ex.Message}");
                                 }
@@ -170,14 +209,15 @@ namespace S10268411_PRG2Assignment
                                     Console.WriteLine($"List of Flights for {airline.Name}");
                                     Console.WriteLine("=============================================");
                                     Console.WriteLine($"{"Flight Number",-18}{"Airline Name",-22}{"Origin",-22}{"Destination",-21}{"Expected Departure/Arrival Time"}");
-                                    
+
                                     foreach (Flight flight in airline.Flights.Values)
                                     {
                                         Console.WriteLine($"{flight.FlightNumber,-18}{airline.Name,-22}{flight.Origin,-22}{flight.Destination,-21}{flight.ExpectedTime.ToString(@"g")}");
                                     }
 
                                     break;
-                                } catch (Exception ex)
+                                }
+                                catch (Exception ex)
                                 {
                                     Console.WriteLine($"Error: {ex.Message}");
                                 }
@@ -265,10 +305,12 @@ namespace S10268411_PRG2Assignment
                                         successfullyAssigned += 1;
                                     }
                                 }
-                            } catch (Exception ex)
+                            }
+                            catch (Exception ex)
                             {
                                 Console.WriteLine($"Error: {ex.Message}");
-                            } finally
+                            }
+                            finally
                             {
                                 Console.WriteLine($"{successfullyAssigned} flights successfully assigned to gates.");
                                 double percentage = (successfullyAssigned / (double)successfullyAssigned + alredyAssigned) * 100;
@@ -299,7 +341,7 @@ namespace S10268411_PRG2Assignment
 
                             Console.WriteLine("Not implemented - solo project");
                             break;
-                        
+
                         case 0:
                             Console.WriteLine("Goodbye!");
                             running = false;
@@ -319,76 +361,93 @@ namespace S10268411_PRG2Assignment
 
         private static void InitialiseValues()
         {
-            // Load airlines
-            Console.WriteLine("Loading Airlines...");
-            List<string> airlinesFile = File.ReadAllLines("airlines.csv").ToList();
-            airlinesFile.RemoveAt(0); // Remove the headers of the csv file
-            foreach (string airline in airlinesFile)
+            foreach (string folder in Directory.GetDirectories(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)))
             {
-                string[] airlineArray = airline.Split(',');
-                Airline airlineObject = new Airline(airlineArray[0], airlineArray[1]);
-                terminal5.Airlines.Add(airlineArray[1], airlineObject);
-            }
-            Console.WriteLine($"{terminal5.Airlines.Count} Airlines Loaded!");
-
-            // Load boarding gates
-            Console.WriteLine("Loading Boarding Gates...");
-            List<string> boardingGatesFile = File.ReadAllLines("boardinggates.csv").ToList();
-            boardingGatesFile.RemoveAt(0);
-            foreach (string boardingGate in boardingGatesFile)
-            {
-                string[] boardingGateArray = boardingGate.Split(',');
-                BoardingGate boardingGateObject = new BoardingGate(
-                    boardingGateArray[0], 
-                    Convert.ToBoolean(boardingGateArray[1]), 
-                    Convert.ToBoolean(boardingGateArray[2]), 
-                    Convert.ToBoolean(boardingGateArray[3])
-                );
-
-                terminal5.BoardingGates.Add(boardingGateArray[0], boardingGateObject);
-            }
-            Console.WriteLine($"{terminal5.BoardingGates.Count} Boarding Gates Loaded!");
-
-            // Load flights
-            Console.WriteLine("Loading Flights...");
-            List<string> flightsFile = File.ReadAllLines("flights.csv").ToList();
-            flightsFile.RemoveAt(0);
-            foreach (string flight in flightsFile)
-            {
-                string[] flightArray = flight.Split(',');
-                Flight flightObject;
-                switch (flightArray?[4] ?? "")
+                if (folder.ToLower().Contains("terminal"))
                 {
-                    case "":
-                    case " ":
-                        flightObject = new NORMFlight(flightArray[0], flightArray[1], flightArray[2], Convert.ToDateTime(flightArray[3]));
-                        break;
+                    if (!File.Exists("airlines.csv") || !File.Exists("boardinggates.csv") || !File.Exists("flights.csv"))
+                    {
+                        Console.WriteLine($@"Terminal folder ""{folder}"" does not contain one or more of the following files: airlines.csv, boardinggates.csv, flights.csv. Skipping this one.");
+                        continue;
+                    } else
+                    {
+                        Console.WriteLine($@"Processing terminal ""{folder}""...");
 
-                    case "LWTT":
-                        flightObject = new LWTTFlight(flightArray[0], flightArray[1], flightArray[2], Convert.ToDateTime(flightArray[3]));
-                        break;
+                        Terminal terminal = new Terminal(folder);
 
-                    case "DDJB":
-                        flightObject = new DDJBFlight(flightArray[0], flightArray[1], flightArray[2], Convert.ToDateTime(flightArray[3]));
-                        break;
+                        // Load airlines
+                        Console.WriteLine("Loading Airlines...");
+                        List<string> airlinesFile = File.ReadAllLines("airlines.csv").ToList();
+                        airlinesFile.RemoveAt(0); // Remove the headers of the csv file
+                        foreach (string airline in airlinesFile)
+                        {
+                            string[] airlineArray = airline.Split(',');
+                            Airline airlineObject = new Airline(airlineArray[0], airlineArray[1]);
+                            terminal.Airlines.Add(airlineArray[1], airlineObject);
+                        }
+                        Console.WriteLine($"{terminal.Airlines.Count} Airlines Loaded!");
 
-                    case "CFFT":
-                        flightObject = new CFFTFlight(flightArray[0], flightArray[1], flightArray[2], Convert.ToDateTime(flightArray[3]));
-                        break;
+                        // Load boarding gates
+                        Console.WriteLine("Loading Boarding Gates...");
+                        List<string> boardingGatesFile = File.ReadAllLines("boardinggates.csv").ToList();
+                        boardingGatesFile.RemoveAt(0);
+                        foreach (string boardingGate in boardingGatesFile)
+                        {
+                            string[] boardingGateArray = boardingGate.Split(',');
+                            BoardingGate boardingGateObject = new BoardingGate(
+                                boardingGateArray[0],
+                                Convert.ToBoolean(boardingGateArray[1]),
+                                Convert.ToBoolean(boardingGateArray[2]),
+                                Convert.ToBoolean(boardingGateArray[3])
+                            );
 
-                    default:
-                        throw new ArgumentException("Invalid request code");
+                            terminal.BoardingGates.Add(boardingGateArray[0], boardingGateObject);
+                        }
+                        Console.WriteLine($"{terminal.BoardingGates.Count} Boarding Gates Loaded!");
+
+                        // Load flights
+                        Console.WriteLine("Loading Flights...");
+                        List<string> flightsFile = File.ReadAllLines("flights.csv").ToList();
+                        flightsFile.RemoveAt(0);
+                        foreach (string flight in flightsFile)
+                        {
+                            string[] flightArray = flight.Split(',');
+                            Flight flightObject;
+                            switch (flightArray?[4] ?? "")
+                            {
+                                case "":
+                                case " ":
+                                    flightObject = new NORMFlight(flightArray[0], flightArray[1], flightArray[2], Convert.ToDateTime(flightArray[3]));
+                                    break;
+
+                                case "LWTT":
+                                    flightObject = new LWTTFlight(flightArray[0], flightArray[1], flightArray[2], Convert.ToDateTime(flightArray[3]));
+                                    break;
+
+                                case "DDJB":
+                                    flightObject = new DDJBFlight(flightArray[0], flightArray[1], flightArray[2], Convert.ToDateTime(flightArray[3]));
+                                    break;
+
+                                case "CFFT":
+                                    flightObject = new CFFTFlight(flightArray[0], flightArray[1], flightArray[2], Convert.ToDateTime(flightArray[3]));
+                                    break;
+
+                                default:
+                                    throw new ArgumentException("Invalid request code");
+                            }
+                            terminal.Flights.Add(flightArray[0], flightObject);
+                        }
+
+                        // Load flights into respective airlines
+                        foreach (Flight flight in terminal.Flights.Values)
+                        {
+                            Airline airline = terminal.Airlines.FirstOrDefault(x => x.Key == flight.FlightNumber.Substring(0, 2)).Value;
+                            airline.Flights.Add(flight.FlightNumber, flight);
+                        }
+                        Console.WriteLine($"{terminal.Flights.Count} Flights Loaded!");
+                    }
                 }
-                terminal5.Flights.Add(flightArray[0], flightObject);
             }
-
-            // Load flights into respective airlines
-            foreach (Flight flight in terminal5.Flights.Values)
-            {
-                Airline airline = terminal5.Airlines.FirstOrDefault(x => x.Key == flight.FlightNumber.Substring(0, 2)).Value;
-                airline.Flights.Add(flight.FlightNumber, flight);
-            }
-            Console.WriteLine($"{terminal5.Flights.Count} Flights Loaded!");
         }
     }
 }
