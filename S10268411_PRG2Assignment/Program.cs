@@ -223,11 +223,19 @@ namespace S10268411_PRG2Assignment
                                     if (airline == null) throw new ArgumentException("Invalid airline code.");
 
                                     Console.WriteLine($"List of Flights for {airline.Name}");
-                                    Console.WriteLine($"{"Flight Number",-18}{"Airline Name",-22}{"Origin",-22}{"Destination",-21}{"Expected Departure/Arrival Time"}");
+                                    Console.WriteLine($"{"Flight Number",-18}{"Airline Name",-22}{"Origin",-22}{"Destination",-21}{"Boarding Gate",-21}{"Special Request Code",-25}{"Expected Departure/Arrival Time"}");
 
                                     foreach (Flight flight in airline.Flights.Values)
                                     {
-                                        Console.WriteLine($"{flight.FlightNumber,-18}{airline.Name,-22}{flight.Origin,-22}{flight.Destination,-21}{flight.ExpectedTime.ToString(@"G")}");
+                                        string boardingGate = selectedTerminal.BoardingGates.Values.FirstOrDefault(x => x.Flight == flight)?.GateName ?? "-";
+                                        
+                                        string specialRequestCode;
+                                        if (flight is LWTTFlight) specialRequestCode = "LWTT";
+                                        else if (flight is CFFTFlight) specialRequestCode = "CFFT";
+                                        else if (flight is DDJBFlight) specialRequestCode = "DDJB";
+                                        else specialRequestCode = "-";
+
+                                        Console.WriteLine($"{flight.FlightNumber,-18}{airline.Name,-22}{flight.Origin,-22}{flight.Destination,-21}{boardingGate,-21}{specialRequestCode,-25}{flight.ExpectedTime.ToString(@"G")}");
                                     }
 
                                     break;
