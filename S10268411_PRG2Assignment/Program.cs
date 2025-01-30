@@ -13,6 +13,7 @@ namespace S10268411_PRG2Assignment
     internal class Program
     {
         private static List<Terminal> terminalList = new List<Terminal>();
+        private static Terminal selectedTerminal;
 
         static void Main(string[] args)
         {
@@ -26,7 +27,7 @@ namespace S10268411_PRG2Assignment
                 Console.WriteLine("=============================================");
                 for (int i = 1; i < terminalList.Count + 1; i++)
                 {
-                    Console.WriteLine($"{i}. {terminalList[i].TerminalName}");
+                    Console.WriteLine($"{i}. {terminalList[i - 1].TerminalName}");
                 }
                 Console.WriteLine("0. Exit");
                 Console.WriteLine();
@@ -35,7 +36,8 @@ namespace S10268411_PRG2Assignment
                 {
                     if (choice > 0 && choice < terminalList.Count)
                     {
-                        Entry(choice);
+                        selectedTerminal = terminalList[choice];
+                        Entry();
                     }
                     else if (choice == 0)
                     {
@@ -56,14 +58,14 @@ namespace S10268411_PRG2Assignment
             
         }
 
-        private static void Entry(int terminalNumber)
+        private static void Entry()
         {
             bool running = true;
             while (running)
             {
                 Console.WriteLine();
                 Console.WriteLine("=============================================");
-                Console.WriteLine("Welcome to Changi Airport Terminal 5");
+                Console.WriteLine($"Welcome to Changi Airport {selectedTerminal}");
                 Console.WriteLine("=============================================");
                 Console.WriteLine("1. List all Flights");
                 Console.WriteLine("2. List Boarding Gates");
@@ -83,21 +85,21 @@ namespace S10268411_PRG2Assignment
                     {
                         case 1:
                             Console.WriteLine("=============================================");
-                            Console.WriteLine("List of Flights for Changi Airport Terminal 5");
+                            Console.WriteLine($"List of Flights for Changi Airport {selectedTerminal}");
                             Console.WriteLine("=============================================");
                             Console.WriteLine($"{"Flight Number",-18}{"Airline Name",-22}{"Origin",-22}{"Destination",-21}{"Expected Departure/Arrival Time"}");
-                            foreach (Flight flight in terminal5.Flights.Values)
+                            foreach (Flight flight in selectedTerminal.Flights.Values)
                             {
-                                Console.WriteLine($"{flight.FlightNumber,-18}{terminal5.Airlines[flight.FlightNumber.Substring(0, 2)].Name,-22}{flight.Origin,-22}{flight.Destination,-21}{flight.ExpectedTime.ToString(@"g")}");
+                                Console.WriteLine($"{flight.FlightNumber,-18}{selectedTerminal.Airlines[flight.FlightNumber.Substring(0, 2)].Name,-22}{flight.Origin,-22}{flight.Destination,-21}{flight.ExpectedTime.ToString(@"g")}");
                             }
                             break;
 
                         case 2:
                             Console.WriteLine("=============================================");
-                            Console.WriteLine("List of Boarding Gates for Changi Airport Terminal 5");
+                            Console.WriteLine($"List of Boarding Gates for Changi Airport {selectedTerminal}");
                             Console.WriteLine("=============================================");
                             Console.WriteLine($"{"Gate Name",-14}{"DDJB",-10}{"CFFT",-10}{"LWTT"}");
-                            foreach (BoardingGate boardingGate in terminal5.BoardingGates.Values)
+                            foreach (BoardingGate boardingGate in selectedTerminal.BoardingGates.Values)
                             {
                                 Console.WriteLine($"{boardingGate.GateName,-14}{boardingGate.SupportsDDJB,-10}{boardingGate.SupportsCFFT,-10}{boardingGate.SupportsLWTT,-10}");
                             }
@@ -115,7 +117,7 @@ namespace S10268411_PRG2Assignment
                                 {
                                     Console.Write("Enter Flight Number: ");
                                     string flightNumber = Console.ReadLine();
-                                    if (terminal5.Airlines.Keys.FirstOrDefault(x => x.ToUpper().Contains(flightNumber.Substring(0, 2))) == null || string.IsNullOrEmpty(flightNumber))
+                                    if (selectedTerminal.Airlines.Keys.FirstOrDefault(x => x.ToUpper().Contains(flightNumber.Substring(0, 2))) == null || string.IsNullOrEmpty(flightNumber))
                                     {
                                         throw new ArgumentException("Invalid flight number.");
                                     }
@@ -162,7 +164,7 @@ namespace S10268411_PRG2Assignment
                                             default:
                                                 throw new ArgumentException("Invalid request code.");
                                         }
-                                        terminal5.Flights.Add(flightNumber, flightObject);
+                                        selectedTerminal.Flights.Add(flightNumber, flightObject);
                                         File.AppendAllText("flights.csv", string.Join(",", flightNumber, origin, destination, expectedTime.ToString("t"), requestCode));
                                         Console.WriteLine($"Flight {flightNumber} has been added!");
                                         Console.WriteLine();
@@ -192,17 +194,17 @@ namespace S10268411_PRG2Assignment
                                 try
                                 {
                                     Console.WriteLine("=============================================");
-                                    Console.WriteLine("List of Airlines for Changi Airport Terminal 5");
+                                    Console.WriteLine($"List of Airlines for Changi Airport {selectedTerminal}");
                                     Console.WriteLine("=============================================");
                                     Console.WriteLine($"{"Airline Code",-17}{"Airline Name"}");
-                                    foreach (KeyValuePair<string, Airline> keyValuePair in terminal5.Airlines)
+                                    foreach (KeyValuePair<string, Airline> keyValuePair in selectedTerminal.Airlines)
                                     {
                                         Console.WriteLine($"{keyValuePair.Key,-17}{keyValuePair.Value.Name}");
                                     }
                                     Console.Write("Enter Airline Code: ");
                                     string airlineCode = Console.ReadLine();
 
-                                    Airline airline = terminal5.Airlines.Values.FirstOrDefault(x => x.Code == airlineCode);
+                                    Airline airline = selectedTerminal.Airlines.Values.FirstOrDefault(x => x.Code == airlineCode);
                                     if (airline == null) throw new ArgumentException("Invalid airline code.");
 
                                     Console.WriteLine("=============================================");
@@ -234,17 +236,17 @@ namespace S10268411_PRG2Assignment
 
                         case 8:
                             int successfullyAssigned = 0;
-                            int alredyAssigned = terminal5.BoardingGates.Values.Where(x => x.Flight != null).Count();
+                            int alredyAssigned = selectedTerminal.BoardingGates.Values.Where(x => x.Flight != null).Count();
                             try
                             {
                                 // Populate list of unassigned gates and flights
-                                List<BoardingGate> unassignedGates = terminal5.BoardingGates.Values.ToList().Where(x => x.Flight == null).ToList();
+                                List<BoardingGate> unassignedGates = selectedTerminal.BoardingGates.Values.ToList().Where(x => x.Flight == null).ToList();
                                 Queue<Flight> unassignedFlights = new Queue<Flight>();
 
                                 // Check which flights are unassigned
-                                foreach (Flight flight in terminal5.Flights.Values)
+                                foreach (Flight flight in selectedTerminal.Flights.Values)
                                 {
-                                    if (terminal5.BoardingGates.Values.FirstOrDefault(x => x.Flight == flight) == null)
+                                    if (selectedTerminal.BoardingGates.Values.FirstOrDefault(x => x.Flight == flight) == null)
                                     {
                                         unassignedFlights.Enqueue(flight);
                                     }
@@ -343,7 +345,6 @@ namespace S10268411_PRG2Assignment
                             break;
 
                         case 0:
-                            Console.WriteLine("Goodbye!");
                             running = false;
                             break;
 
@@ -365,19 +366,20 @@ namespace S10268411_PRG2Assignment
             {
                 if (folder.ToLower().Contains("terminal"))
                 {
-                    if (!File.Exists("airlines.csv") || !File.Exists("boardinggates.csv") || !File.Exists("flights.csv"))
+                    string shortFolder = folder.Split(@"\").Last();
+                    if (!File.Exists(Path.Combine(folder, "airlines.csv")) || !File.Exists(Path.Combine(folder, "boardinggates.csv")) || !File.Exists(Path.Combine(folder, "flights.csv")))
                     {
-                        Console.WriteLine($@"Terminal folder ""{folder}"" does not contain one or more of the following files: airlines.csv, boardinggates.csv, flights.csv. Skipping this one.");
+                        Console.WriteLine($@"Terminal folder ""{shortFolder}"" does not contain one or more of the following files: airlines.csv, boardinggates.csv, flights.csv. Skipping this one.");
                         continue;
                     } else
                     {
-                        Console.WriteLine($@"Processing terminal ""{folder}""...");
+                        Console.WriteLine($@"Processing terminal ""{shortFolder}""...");
 
-                        Terminal terminal = new Terminal(folder);
+                        Terminal terminal = new Terminal(shortFolder);
 
                         // Load airlines
                         Console.WriteLine("Loading Airlines...");
-                        List<string> airlinesFile = File.ReadAllLines("airlines.csv").ToList();
+                        List<string> airlinesFile = File.ReadAllLines(Path.Combine(folder, "airlines.csv")).ToList();
                         airlinesFile.RemoveAt(0); // Remove the headers of the csv file
                         foreach (string airline in airlinesFile)
                         {
@@ -389,7 +391,7 @@ namespace S10268411_PRG2Assignment
 
                         // Load boarding gates
                         Console.WriteLine("Loading Boarding Gates...");
-                        List<string> boardingGatesFile = File.ReadAllLines("boardinggates.csv").ToList();
+                        List<string> boardingGatesFile = File.ReadAllLines(Path.Combine(folder, "boardinggates.csv")).ToList();
                         boardingGatesFile.RemoveAt(0);
                         foreach (string boardingGate in boardingGatesFile)
                         {
@@ -407,7 +409,7 @@ namespace S10268411_PRG2Assignment
 
                         // Load flights
                         Console.WriteLine("Loading Flights...");
-                        List<string> flightsFile = File.ReadAllLines("flights.csv").ToList();
+                        List<string> flightsFile = File.ReadAllLines(Path.Combine(folder, "flights.csv")).ToList();
                         flightsFile.RemoveAt(0);
                         foreach (string flight in flightsFile)
                         {
@@ -445,6 +447,8 @@ namespace S10268411_PRG2Assignment
                             airline.Flights.Add(flight.FlightNumber, flight);
                         }
                         Console.WriteLine($"{terminal.Flights.Count} Flights Loaded!");
+                        terminalList.Add(terminal);
+                        Console.WriteLine();
                     }
                 }
             }
