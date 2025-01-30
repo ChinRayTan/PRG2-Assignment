@@ -15,6 +15,7 @@ namespace S10268411_PRG2Assignment
         private static List<Terminal> terminalList = new List<Terminal>();
         private static Terminal selectedTerminal;
 
+        // Terminal selection
         static void Main(string[] args)
         {
             InitialiseValues();
@@ -36,7 +37,7 @@ namespace S10268411_PRG2Assignment
                 {
                     if (choice > 0 && choice < terminalList.Count)
                     {
-                        selectedTerminal = terminalList[choice];
+                        selectedTerminal = terminalList[choice - 1];
                         Entry();
                     }
                     else if (choice == 0)
@@ -58,6 +59,7 @@ namespace S10268411_PRG2Assignment
             
         }
 
+        // Entrypoint containing main code for functionality
         private static void Entry()
         {
             bool running = true;
@@ -117,23 +119,33 @@ namespace S10268411_PRG2Assignment
                                 {
                                     Console.Write("Enter Flight Number: ");
                                     string flightNumber = Console.ReadLine();
-                                    if (selectedTerminal.Airlines.Keys.FirstOrDefault(x => x.ToUpper().Contains(flightNumber.Substring(0, 2))) == null || string.IsNullOrEmpty(flightNumber))
+                                    if (string.IsNullOrEmpty(flightNumber))
                                     {
-                                        throw new ArgumentException("Invalid flight number.");
+                                        throw new ArgumentException("Invalid flight number - This field cannot be left blank.");
+                                    }
+
+                                    if (selectedTerminal.Airlines.Keys.FirstOrDefault(x => x.ToUpper().Contains(flightNumber.Substring(0, 2))) == null)
+                                    {
+                                        throw new ArgumentException("Invalid flight number - Invalid airline code.");
+                                    }
+
+                                    if (flightNumber[2] != ' ')
+                                    {
+                                        throw new ArgumentException("Invalid flight number - You must leave a space in between the airline code and the number.");
                                     }
 
                                     Console.Write("Enter Origin: ");
                                     string origin = Console.ReadLine();
                                     if (string.IsNullOrEmpty(origin))
                                     {
-                                        throw new ArgumentException("Invalid flight origin.");
+                                        throw new ArgumentException("Invalid flight origin - This field cannot be left blank.");
                                     }
 
                                     Console.Write("Enter Destination: ");
                                     string destination = Console.ReadLine();
                                     if (string.IsNullOrEmpty(destination))
                                     {
-                                        throw new ArgumentException("Invalid flight destination.");
+                                        throw new ArgumentException("Invalid flight destination - This field cannot be left blank.");
                                     }
 
                                     Console.Write("Enter Expected Departure/Arrival Time (dd/mm/yyyy hh:mm): ");
@@ -164,7 +176,10 @@ namespace S10268411_PRG2Assignment
                                             default:
                                                 throw new ArgumentException("Invalid request code.");
                                         }
+
                                         selectedTerminal.Flights.Add(flightNumber, flightObject);
+                                        Airline targetAirline = selectedTerminal.Airlines.Values.FirstOrDefault(x => x.Code.ToUpper().Contains(flightNumber.Substring(0, 2)));
+                                        targetAirline.Flights.Add(flightNumber, flightObject);
                                         File.AppendAllText("flights.csv", string.Join(",", flightNumber, origin, destination, expectedTime.ToString("t"), requestCode));
                                         Console.WriteLine($"Flight {flightNumber} has been added!");
                                         Console.WriteLine();
@@ -178,7 +193,7 @@ namespace S10268411_PRG2Assignment
                                     }
                                     else
                                     {
-                                        throw new ArgumentException("Invalid time.");
+                                        throw new ArgumentException("Invalid date or time.");
                                     }
                                 }
                                 catch (Exception ex)
@@ -201,20 +216,18 @@ namespace S10268411_PRG2Assignment
                                     {
                                         Console.WriteLine($"{keyValuePair.Key,-17}{keyValuePair.Value.Name}");
                                     }
-                                    Console.Write("Enter Airline Code: ");
+                                    Console.WriteLine("Enter Airline Code: ");
                                     string airlineCode = Console.ReadLine();
 
                                     Airline airline = selectedTerminal.Airlines.Values.FirstOrDefault(x => x.Code == airlineCode);
                                     if (airline == null) throw new ArgumentException("Invalid airline code.");
 
-                                    Console.WriteLine("=============================================");
                                     Console.WriteLine($"List of Flights for {airline.Name}");
-                                    Console.WriteLine("=============================================");
                                     Console.WriteLine($"{"Flight Number",-18}{"Airline Name",-22}{"Origin",-22}{"Destination",-21}{"Expected Departure/Arrival Time"}");
 
                                     foreach (Flight flight in airline.Flights.Values)
                                     {
-                                        Console.WriteLine($"{flight.FlightNumber,-18}{airline.Name,-22}{flight.Origin,-22}{flight.Destination,-21}{flight.ExpectedTime.ToString(@"g")}");
+                                        Console.WriteLine($"{flight.FlightNumber,-18}{airline.Name,-22}{flight.Origin,-22}{flight.Destination,-21}{flight.ExpectedTime.ToString(@"G")}");
                                     }
 
                                     break;
@@ -235,88 +248,106 @@ namespace S10268411_PRG2Assignment
                             break;
 
                         case 8:
-                            int successfullyAssigned = 0;
-                            int alredyAssigned = selectedTerminal.BoardingGates.Values.Where(x => x.Flight != null).Count();
                             try
                             {
-                                // Populate list of unassigned gates and flights
-                                List<BoardingGate> unassignedGates = selectedTerminal.BoardingGates.Values.ToList().Where(x => x.Flight == null).ToList();
-                                Queue<Flight> unassignedFlights = new Queue<Flight>();
-
-                                // Check which flights are unassigned
-                                foreach (Flight flight in selectedTerminal.Flights.Values)
+                                int successfullyAssigned = 0;
+                                int alredyAssigned = selectedTerminal.BoardingGates.Values.Where(x => x.Flight != null).Count();
+                                try
                                 {
-                                    if (selectedTerminal.BoardingGates.Values.FirstOrDefault(x => x.Flight == flight) == null)
-                                    {
-                                        unassignedFlights.Enqueue(flight);
-                                    }
-                                }
+                                    // Populate list of unassigned gates and flights
+                                    List<BoardingGate> unassignedGates = selectedTerminal.BoardingGates.Values.ToList().Where(x => x.Flight == null).ToList();
+                                    Queue<Flight> unassignedFlights = new Queue<Flight>();
 
-                                Console.WriteLine($"Unassigned flights: {unassignedFlights.Count}");
-                                Console.WriteLine($"Unassigned boarding gates: {unassignedGates.Count}");
-
-                                // Assign all the special flights first
-                                while (unassignedFlights.Count - unassignedFlights.Where(x => x is NORMFlight).ToList().Count > 0)
-                                {
-                                    Flight flight = unassignedFlights.Dequeue();
-                                    BoardingGate? suitableGate;
-
-                                    if (flight is CFFTFlight)
+                                    // Check which flights are unassigned
+                                    foreach (Flight flight in selectedTerminal.Flights.Values)
                                     {
-                                        suitableGate = unassignedGates.FirstOrDefault(x => x.SupportsCFFT == true);
-                                        if (suitableGate == null) throw new Exception("No available CFFT capable gates for flight.");
-                                    }
-                                    else if (flight is DDJBFlight)
-                                    {
-                                        suitableGate = unassignedGates.FirstOrDefault(
-                                            x => x.SupportsDDJB == true
-                                        );
-
-                                        if (suitableGate == null) throw new Exception("No available DDJB capable gates for flight.");
-                                    }
-                                    else if (flight is LWTTFlight)
-                                    {
-                                        suitableGate = unassignedGates.FirstOrDefault(
-                                            x => x.SupportsLWTT == true
-                                        );
-
-                                        if (suitableGate == null) throw new Exception("No available LWTT capable gates for flight.");
-                                    }
-                                    else
-                                    {
-                                        unassignedFlights.Enqueue(flight);
-                                        continue;
+                                        if (selectedTerminal.BoardingGates.Values.FirstOrDefault(x => x.Flight == flight) == null)
+                                        {
+                                            unassignedFlights.Enqueue(flight);
+                                        }
                                     }
 
-                                    suitableGate.Flight = flight;
-                                    unassignedGates.Remove(suitableGate);
-                                    successfullyAssigned += 1;
-                                }
+                                    Console.WriteLine($"Unassigned flights: {unassignedFlights.Count}");
+                                    Console.WriteLine($"Unassigned boarding gates: {unassignedGates.Count}");
 
-                                // Assign normal flights (which are fine with anything)
-                                while (unassignedFlights.Count > 0)
-                                {
-                                    Flight flight = unassignedFlights.Dequeue();
-                                    BoardingGate? suitableGate = unassignedGates.FirstOrDefault();
-
-                                    if (suitableGate == null) throw new Exception("No available gates for normal flights.");
-                                    else
+                                    // Assign all the special flights first
+                                    while (unassignedFlights.Count - unassignedFlights.Where(x => x is NORMFlight).ToList().Count > 0)
                                     {
+                                        Flight flight = unassignedFlights.Dequeue();
+                                        BoardingGate? suitableGate;
+
+                                        if (flight is CFFTFlight)
+                                        {
+                                            suitableGate = unassignedGates.FirstOrDefault(x => x.SupportsCFFT == true);
+                                            if (suitableGate == null)
+                                            {
+                                                Console.WriteLine("Error: No available CFFT capable gates for flight.");
+                                                continue;
+                                            }
+                                        }
+                                        else if (flight is DDJBFlight)
+                                        {
+                                            suitableGate = unassignedGates.FirstOrDefault(
+                                                x => x.SupportsDDJB == true
+                                            );
+
+                                            if (suitableGate == null)
+                                            {
+                                                Console.WriteLine("Error: No available DDJB capable gates for flight.");
+                                                continue;
+                                            }
+                                        }
+                                        else if (flight is LWTTFlight)
+                                        {
+                                            suitableGate = unassignedGates.FirstOrDefault(
+                                                x => x.SupportsLWTT == true
+                                            );
+
+                                            if(suitableGate == null)
+                                            {
+                                                Console.WriteLine("Error: No available LWTT capable gates for flight.");
+                                                continue;
+                                            }
+                                        }
+                                        else
+                                        {
+                                            unassignedFlights.Enqueue(flight);
+                                            continue;
+                                        }
+
                                         suitableGate.Flight = flight;
                                         unassignedGates.Remove(suitableGate);
                                         successfullyAssigned += 1;
                                     }
+
+                                    // Assign normal flights (which are fine with anything)
+                                    while (unassignedFlights.Count > 0)
+                                    {
+                                        Flight flight = unassignedFlights.Dequeue();
+                                        BoardingGate? suitableGate = unassignedGates.FirstOrDefault();
+
+                                        if (suitableGate == null) throw new Exception("No available gates for normal flights."); // Can throw exception here since all the other flights will be normal flights, so we know it will fail regardless
+                                        else
+                                        {
+                                            suitableGate.Flight = flight;
+                                            unassignedGates.Remove(suitableGate);
+                                            successfullyAssigned += 1;
+                                        }
+                                    }
                                 }
-                            }
-                            catch (Exception ex)
+                                catch (Exception ex)
+                                {
+                                    Console.WriteLine($"Error: {ex.Message}");
+                                }
+                                finally
+                                {
+                                    Console.WriteLine($"{successfullyAssigned} flights successfully assigned to gates.");
+                                    double percentage = (successfullyAssigned / (double)successfullyAssigned + alredyAssigned) * 100;
+                                    Console.WriteLine($"{(successfullyAssigned == 0 ? "0" : percentage):F2}% out of total assigned flights processed");
+                                }
+                            } catch (Exception ex)
                             {
                                 Console.WriteLine($"Error: {ex.Message}");
-                            }
-                            finally
-                            {
-                                Console.WriteLine($"{successfullyAssigned} flights successfully assigned to gates.");
-                                double percentage = (successfullyAssigned / (double)successfullyAssigned + alredyAssigned) * 100;
-                                Console.WriteLine($"{(successfullyAssigned == 0 ? "0" : percentage):F2}% out of total assigned flights processed");
                             }
                             break;
 
