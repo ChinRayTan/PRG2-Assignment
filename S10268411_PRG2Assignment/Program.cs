@@ -100,10 +100,10 @@ namespace S10268411_PRG2Assignment
                             Console.WriteLine("=============================================");
                             Console.WriteLine($"List of Boarding Gates for Changi Airport {selectedTerminal}");
                             Console.WriteLine("=============================================");
-                            Console.WriteLine($"{"Gate Name",-14}{"DDJB",-10}{"CFFT",-10}{"LWTT"}");
+                            Console.WriteLine($"{"Gate Name",-14}{"DDJB",-10}{"CFFT",-10}{"LWTT",-10}{"Assigned Flight"}");
                             foreach (BoardingGate boardingGate in selectedTerminal.BoardingGates.Values)
                             {
-                                Console.WriteLine($"{boardingGate.GateName,-14}{boardingGate.SupportsDDJB,-10}{boardingGate.SupportsCFFT,-10}{boardingGate.SupportsLWTT,-10}");
+                                Console.WriteLine($"{boardingGate.GateName,-14}{boardingGate.SupportsDDJB,-10}{boardingGate.SupportsCFFT,-10}{boardingGate.SupportsLWTT,-10}{boardingGate.Flight?.FlightNumber ?? "-"}");
                             }
                             break;
 
