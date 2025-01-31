@@ -290,7 +290,7 @@ namespace S10268411_PRG2Assignment
                             try
                             {
                                 int successfullyAssigned = 0;
-                                int alredyAssigned = selectedTerminal.BoardingGates.Values.Where(x => x.Flight != null).Count();
+                                int alreadyAssigned = selectedTerminal.BoardingGates.Values.Where(x => x.Flight != null).Count();
                                 int totalFlights = 0;
                                 try
                                 {
@@ -380,7 +380,7 @@ namespace S10268411_PRG2Assignment
                                 finally
                                 {
                                     Console.WriteLine($"{successfullyAssigned}/{totalFlights} flights successfully assigned to gates.");
-                                    double percentage = (successfullyAssigned / (double)successfullyAssigned + alredyAssigned) * 100;
+                                    double percentage = (successfullyAssigned / (double)successfullyAssigned + alreadyAssigned) * 100;
                                     Console.WriteLine($"{(successfullyAssigned == 0 ? "0" : percentage):F2}% out of total assigned flights processed");
                                 }
                             } catch (Exception ex)
@@ -432,6 +432,7 @@ namespace S10268411_PRG2Assignment
 
         private static void InitialiseValues()
         {
+            // BONUS: Multi-terminal support by reading the csv files in all folders that contain "terminal"
             foreach (string folder in Directory.GetDirectories(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)))
             {
                 if (folder.ToLower().Contains("terminal")) // Any folder that contains "terminal" is considered, opening options for special terminal names
