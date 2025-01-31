@@ -32,20 +32,22 @@ namespace S10268411_PRG2Assignment
                 }
                 Console.WriteLine("0. Exit");
                 Console.WriteLine();
+                
                 Console.Write("Please select a terminal: ");
                 if (Int32.TryParse(Console.ReadLine(), out int choice))
                 {
-                    if (choice > 0 && choice < terminalList.Count)
+                    // Terminal option
+                    if (choice > 0 && choice <= terminalList.Count)
                     {
                         selectedTerminal = terminalList[choice - 1];
                         Entry();
                     }
-                    else if (choice == 0)
+                    else if (choice == 0) // Exit option
                     {
                         Console.WriteLine("Goodbye!");
                         mainMenu = false;
                         break;
-                    } else
+                    } else // Invalid option
                     {
                         Console.WriteLine("Invalid option.");
                     }
@@ -59,7 +61,7 @@ namespace S10268411_PRG2Assignment
             
         }
 
-        // Entrypoint containing main code for functionality
+        // Entry point containing main code for functionality
         private static void Entry()
         {
             bool running = true;
@@ -85,6 +87,7 @@ namespace S10268411_PRG2Assignment
                 {
                     switch (choice)
                     {
+                        // Basic feature 3: List all flights
                         case 1:
                             Console.WriteLine("=============================================");
                             Console.WriteLine($"List of Flights for Changi Airport {selectedTerminal}");
@@ -92,10 +95,12 @@ namespace S10268411_PRG2Assignment
                             Console.WriteLine($"{"Flight Number",-18}{"Airline Name",-22}{"Origin",-22}{"Destination",-21}{"Expected Departure/Arrival Time"}");
                             foreach (Flight flight in selectedTerminal.Flights.Values)
                             {
+                                //                   <--Flight Number-->      <-------------------------Airline Name---------------------------->      <---Origin-->      <---Destination-->      <-Expected Departure/Arrival Time->
                                 Console.WriteLine($"{flight.FlightNumber,-18}{selectedTerminal.Airlines[flight.FlightNumber.Substring(0, 2)].Name,-22}{flight.Origin,-22}{flight.Destination,-21}{flight.ExpectedTime.ToString(@"g")}");
                             }
                             break;
 
+                        // Basic feature 4: List all boarding gates
                         case 2:
                             Console.WriteLine("=============================================");
                             Console.WriteLine($"List of Boarding Gates for Changi Airport {selectedTerminal}");
@@ -103,14 +108,17 @@ namespace S10268411_PRG2Assignment
                             Console.WriteLine($"{"Gate Name",-14}{"DDJB",-10}{"CFFT",-10}{"LWTT",-10}{"Assigned Flight"}");
                             foreach (BoardingGate boardingGate in selectedTerminal.BoardingGates.Values)
                             {
+                                //                   <-----Gate Name----->      <---------DDJB---------->      <----------CFFT--------->      <----------LWTT--------->      <--------Assigned Flight Number-------->
                                 Console.WriteLine($"{boardingGate.GateName,-14}{boardingGate.SupportsDDJB,-10}{boardingGate.SupportsCFFT,-10}{boardingGate.SupportsLWTT,-10}{boardingGate.Flight?.FlightNumber ?? "-"}");
                             }
                             break;
 
+                        // Basic feature 5: Assign a boarding gate to flight (NOT IMPLEMENTED - SOLO)
                         case 3:
                             Console.WriteLine("Not implemented - solo project");
                             break;
 
+                        // Basic feature 6: Create flight
                         case 4:
                             bool loop = true;
                             while (loop == true)
@@ -119,23 +127,36 @@ namespace S10268411_PRG2Assignment
                                 {
                                     Console.Write("Enter Flight Number: ");
                                     string flightNumber = Console.ReadLine();
+
+                                    // Check if flight number is null or empty
                                     if (string.IsNullOrEmpty(flightNumber))
                                     {
                                         throw new ArgumentException("Invalid flight number - This field cannot be left blank.");
                                     }
 
-                                    if (selectedTerminal.Airlines.Keys.FirstOrDefault(x => x.ToUpper().Contains(flightNumber.Substring(0, 2))) == null)
+                                    // Check if specified airline code exists
+                                    if (selectedTerminal.Airlines.ContainsKey(flightNumber.Substring(0, 2)) == false)
                                     {
                                         throw new ArgumentException("Invalid flight number - Invalid airline code.");
                                     }
 
+                                    // Checks if there is a space between airline code and number (e.g. SQ 112)
+                                    //                                                                    ^
                                     if (flightNumber[2] != ' ')
                                     {
                                         throw new ArgumentException("Invalid flight number - You must leave a space in between the airline code and the number.");
                                     }
 
+                                    // Checks if the rest of the flight number consists only of numbers
+                                    if (!Int32.TryParse(flightNumber.Split(' ')[1], out int _flightNumber))
+                                    {
+                                        throw new ArgumentException("Invalid flight number - the second part of the flight number must consist of digits only.");
+                                    }
+
                                     Console.Write("Enter Origin: ");
                                     string origin = Console.ReadLine();
+                                    
+                                    // Check if flight origin is null or empty
                                     if (string.IsNullOrEmpty(origin))
                                     {
                                         throw new ArgumentException("Invalid flight origin - This field cannot be left blank.");
@@ -143,6 +164,8 @@ namespace S10268411_PRG2Assignment
 
                                     Console.Write("Enter Destination: ");
                                     string destination = Console.ReadLine();
+                                    
+                                    // Check if flight destination is null or empty
                                     if (string.IsNullOrEmpty(destination))
                                     {
                                         throw new ArgumentException("Invalid flight destination - This field cannot be left blank.");
@@ -179,11 +202,13 @@ namespace S10268411_PRG2Assignment
 
                                         selectedTerminal.Flights.Add(flightNumber, flightObject);
                                         Airline targetAirline = selectedTerminal.Airlines.Values.FirstOrDefault(x => x.Code.ToUpper().Contains(flightNumber.Substring(0, 2)));
-                                        targetAirline.Flights.Add(flightNumber, flightObject);
+                                        if (!targetAirline.AddFlight(flightObject)) throw new ArgumentException("This exception should never be thrown, but there was an error adding the flight to their airline.");
+
                                         File.AppendAllText("flights.csv", string.Join(",", flightNumber, origin, destination, expectedTime.ToString("t"), requestCode));
                                         Console.WriteLine($"Flight {flightNumber} has been added!");
                                         Console.WriteLine();
-                                        Console.Write("Would you like to add another flight [Y/N]: ");
+                                        
+                                        Console.Write("Would you like to add another flight [y/N]: ");
                                         string response = Console.ReadLine();
                                         if (response.ToLower() != "y")
                                         {
@@ -203,6 +228,7 @@ namespace S10268411_PRG2Assignment
                             }
                             break;
 
+                        // Basic feature 7: Display full flight details from airline
                         case 5:
                             while (true)
                             {
@@ -216,10 +242,12 @@ namespace S10268411_PRG2Assignment
                                     {
                                         Console.WriteLine($"{keyValuePair.Key,-17}{keyValuePair.Value.Name}");
                                     }
+                                    
                                     Console.WriteLine("Enter Airline Code: ");
                                     string airlineCode = Console.ReadLine();
 
-                                    Airline airline = selectedTerminal.Airlines.Values.FirstOrDefault(x => x.Code == airlineCode);
+                                    // Validates airline code: Set variable to airline object if valid
+                                    Airline airline = selectedTerminal.Airlines.Values.FirstOrDefault(x => x.Code.ToUpper() == airlineCode);
                                     if (airline == null) throw new ArgumentException("Invalid airline code.");
 
                                     Console.WriteLine($"List of Flights for {airline.Name}");
@@ -247,19 +275,23 @@ namespace S10268411_PRG2Assignment
                             }
                             break;
 
+                        // Basic feature 8: Modify flight details (NOT IMPLEMENTED - SOLO)
                         case 6:
                             Console.WriteLine("Not implemented - solo project");
                             break;
 
+                        // Basic feature 9: Display scheduled flights in chronological order (NOT IMPLEMENTED - SOLO)
                         case 7:
                             Console.WriteLine("Not implemented - solo project");
                             break;
 
+                        // Advanced feature (a): Process all unassigned flights to boarding gates in bulk
                         case 8:
                             try
                             {
                                 int successfullyAssigned = 0;
                                 int alredyAssigned = selectedTerminal.BoardingGates.Values.Where(x => x.Flight != null).Count();
+                                int totalFlights = 0;
                                 try
                                 {
                                     // Populate list of unassigned gates and flights
@@ -274,6 +306,8 @@ namespace S10268411_PRG2Assignment
                                             unassignedFlights.Enqueue(flight);
                                         }
                                     }
+
+                                    totalFlights = unassignedFlights.Count;
 
                                     Console.WriteLine($"Unassigned flights: {unassignedFlights.Count}");
                                     Console.WriteLine($"Unassigned boarding gates: {unassignedGates.Count}");
@@ -295,9 +329,7 @@ namespace S10268411_PRG2Assignment
                                         }
                                         else if (flight is DDJBFlight)
                                         {
-                                            suitableGate = unassignedGates.FirstOrDefault(
-                                                x => x.SupportsDDJB == true
-                                            );
+                                            suitableGate = unassignedGates.FirstOrDefault(x => x.SupportsDDJB == true);
 
                                             if (suitableGate == null)
                                             {
@@ -307,9 +339,7 @@ namespace S10268411_PRG2Assignment
                                         }
                                         else if (flight is LWTTFlight)
                                         {
-                                            suitableGate = unassignedGates.FirstOrDefault(
-                                                x => x.SupportsLWTT == true
-                                            );
+                                            suitableGate = unassignedGates.FirstOrDefault(x => x.SupportsLWTT == true);
 
                                             if(suitableGate == null)
                                             {
@@ -349,7 +379,7 @@ namespace S10268411_PRG2Assignment
                                 }
                                 finally
                                 {
-                                    Console.WriteLine($"{successfullyAssigned} flights successfully assigned to gates.");
+                                    Console.WriteLine($"{successfullyAssigned}/{totalFlights} flights successfully assigned to gates.");
                                     double percentage = (successfullyAssigned / (double)successfullyAssigned + alredyAssigned) * 100;
                                     Console.WriteLine($"{(successfullyAssigned == 0 ? "0" : percentage):F2}% out of total assigned flights processed");
                                 }
@@ -359,6 +389,7 @@ namespace S10268411_PRG2Assignment
                             }
                             break;
 
+                        // Advanced feature (b) (NOT IMPLEMENTED - SOLO)
                         case 9:
                             /*try
                             {
@@ -403,9 +434,11 @@ namespace S10268411_PRG2Assignment
         {
             foreach (string folder in Directory.GetDirectories(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)))
             {
-                if (folder.ToLower().Contains("terminal"))
+                if (folder.ToLower().Contains("terminal")) // Any folder that contains "terminal" is considered, opening options for special terminal names
                 {
-                    string shortFolder = folder.Split(@"\").Last();
+                    string shortFolder = folder.Split(@"\").Last(); // Convert absolute -> relative
+                    
+                    // Skip terminal folders if they don't contain one or more of the required csv files
                     if (!File.Exists(Path.Combine(folder, "airlines.csv")) || !File.Exists(Path.Combine(folder, "boardinggates.csv")) || !File.Exists(Path.Combine(folder, "flights.csv")))
                     {
                         Console.WriteLine($@"Terminal folder ""{shortFolder}"" does not contain one or more of the following files: airlines.csv, boardinggates.csv, flights.csv. Skipping this one.");
@@ -424,7 +457,7 @@ namespace S10268411_PRG2Assignment
                         {
                             string[] airlineArray = airline.Split(',');
                             Airline airlineObject = new Airline(airlineArray[0], airlineArray[1]);
-                            terminal.Airlines.Add(airlineArray[1], airlineObject);
+                            terminal.AddAirline(airlineObject);
                         }
                         Console.WriteLine($"{terminal.Airlines.Count} Airlines Loaded!");
 
@@ -442,7 +475,7 @@ namespace S10268411_PRG2Assignment
                                 Convert.ToBoolean(boardingGateArray[3])
                             );
 
-                            terminal.BoardingGates.Add(boardingGateArray[0], boardingGateObject);
+                            terminal.AddBoardingGate(boardingGateObject);
                         }
                         Console.WriteLine($"{terminal.BoardingGates.Count} Boarding Gates Loaded!");
 
@@ -483,7 +516,7 @@ namespace S10268411_PRG2Assignment
                         foreach (Flight flight in terminal.Flights.Values)
                         {
                             Airline airline = terminal.Airlines.FirstOrDefault(x => x.Key == flight.FlightNumber.Substring(0, 2)).Value;
-                            airline.Flights.Add(flight.FlightNumber, flight);
+                            airline.AddFlight(flight);
                         }
                         Console.WriteLine($"{terminal.Flights.Count} Flights Loaded!");
                         terminalList.Add(terminal);
