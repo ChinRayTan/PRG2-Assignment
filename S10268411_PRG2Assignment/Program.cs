@@ -380,8 +380,15 @@ namespace S10268411_PRG2Assignment
                                 finally
                                 {
                                     Console.WriteLine($"{successfullyAssigned}/{totalFlights} flights successfully assigned to gates.");
-                                    double percentage = (successfullyAssigned / (double)successfullyAssigned + alreadyAssigned) * 100;
-                                    Console.WriteLine($"{(successfullyAssigned == 0 ? "0" : percentage):F2}% out of total assigned flights processed");
+                                    if (alreadyAssigned == 0)
+                                    {
+                                        Console.WriteLine("There were no previously assigned flights.");
+                                    }
+                                    else
+                                    {
+                                        double percentage = (successfullyAssigned / (double)alreadyAssigned) * 100;
+                                        Console.WriteLine($"{(percentage == 0 ? "0" : percentage):F2}% of already assigned flights have just been processed");
+                                    }
                                 }
                             } catch (Exception ex)
                             {
